@@ -17,16 +17,30 @@ In your composer.json
 }
 ```
 
-Then add the following makefile
+Then add the following makefile to your project
 ```makefile
-REPLACE_VAR=CD DOMAIN
-
+# Deploy configuration variables
 CD=$(shell pwd)
-DOMAIN=default_server
 
-include vendor/dav-m85/makefile-trusty/makefile
+# Silent include, if we haven't called build yet
+-include vendor/dav-m85/makefile-trusty/trusty-deploy.mk
 
-install: | is_sudo /etc/nginx/sites-enabled/website.conf
+# Standard targets
+build:
+    composer install
+
+install: std_deploy_nginx
 ```
 
-```sudo make install``` shall now install nginx on your target machine.
+```make build && sudo make install``` shall now install nginx on your target machine.
+
+## Available targets
+Variables in **bold** can be found inside the makefiles. They have default values. You can override them by definind them before or after the inclusion.
+Explore the **trust-deploy-defaults.mk** file to get the default values.
+Each target's algorithm is described below step by step.
+
+### std_deploy_nginx
+* Copy **DIST** file to **NGINX_AVAILABLE** 
+* Replace **REPLACE_VAR** variables in the copied file.
+* Link it to a **NGINX_NAME** symlink inside of **NGINX_ENABLED**
+* Reload the nginx server
